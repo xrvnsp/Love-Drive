@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: love-drive-apk-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -40,7 +44,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cp app/build/outputs/apk/debug/app-debug.apk LoveDrive-debug.apk
-          if ! gh release view latest >/dev/null 2>&1; then
-            gh release create latest --title "Love Drive Latest APK" --notes "Automated Android Auto APK builds"
-          fi
-          gh release upload latest LoveDrive-debug.apk --clobber
+          gh release upload latest LoveDrive-debug.apk --clobber ||           gh release create latest LoveDrive-debug.apk             --target "${{ github.sha }}"             --title "Love Drive Latest APK"             --notes "Automated build #${{ github.run_number }}"
