@@ -13,12 +13,11 @@ class HeadUnitPreviewActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var photos: List<LovePhoto> = emptyList()
     private var currentIndex = 0
-    private var isPlaying = true
     private var elapsedTick = 0
 
     private val tickRunnable = object : Runnable {
         override fun run() {
-            if (!isPlaying || photos.isEmpty()) return
+            if (photos.isEmpty()) return
             val intervalSec = PhotoRepository.getIntervalSeconds(this@HeadUnitPreviewActivity)
             elapsedTick++
             if (elapsedTick >= intervalSec) {
@@ -26,7 +25,6 @@ class HeadUnitPreviewActivity : AppCompatActivity() {
                 currentIndex = (currentIndex + 1) % photos.size
                 renderPhoto()
             }
-            binding.pbCarSeekbar.progress = ((elapsedTick.toFloat() / intervalSec) * 100).toInt()
             handler.postDelayed(this, 1000L)
         }
     }
@@ -39,48 +37,16 @@ class HeadUnitPreviewActivity : AppCompatActivity() {
         photos = PhotoRepository.getPhotos(this)
 
         binding.btnBack.setOnClickListener { finish() }
-
-        binding.btnModeSplit.setOnClickListener { binding.headUnitFrame.post {
-            val parent = binding.headUnitFrame.parent as View
-            val availW = parent.width
-            val availH = parent.height
-            if (availW > 0 && availH > 0) {
-                val targetW = minOf(availW, (availH * 16f / 9f).toInt())
-                val targetH = (targetW * 9f / 16f).toInt()
-                binding.headUnitFrame.layoutParams = binding.headUnitFrame.layoutParams.apply {
-                    width = targetW
-                    height = targetH
-                }
-            }
-        }
-        setSplitMode(true) }
+        binding.btnModeSplit.setOnClickListener { setSplitMode(true) }
         binding.btnModeFull.setOnClickListener { setSplitMode(false) }
 
-        binding.btnCarPrev.setOnClickListener {
-            if (photos.isEmpty()) return@setOnClickListener
-            elapsedTick = 0
-            currentIndex = (currentIndex - 1 + photos.size) % photos.size
-            renderPhoto()
-        }
-
-        binding.btnCarNext.setOnClickListener {
+        // Tap photo to advance to next photo cleanly without on-screen buttons
+        binding.ivCarPhoto.setOnClickListener {
             if (photos.isEmpty()) return@setOnClickListener
             elapsedTick = 0
             currentIndex = (currentIndex + 1) % photos.size
             renderPhoto()
         }
-
-        binding.btnCarPlayPause.setOnClickListener {
-            isPlaying = !isPlaying
-            binding.btnCarPlayPause.setImageResource(
-                if (isPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play
-            )
-            handler.removeCallbacks(tickRunnable)
-            if (isPlaying) handler.postDelayed(tickRunnable, 1000L)
-        }
-
-        val hideSeekbar = PhotoRepository.getHideSeekbar(this)
-        binding.pbCarSeekbar.visibility = if (hideSeekbar) View.GONE else View.VISIBLE
 
         binding.headUnitFrame.post {
             val parent = binding.headUnitFrame.parent as View
@@ -95,6 +61,7 @@ class HeadUnitPreviewActivity : AppCompatActivity() {
                 }
             }
         }
+
         setSplitMode(true)
         renderPhoto()
         if (photos.isNotEmpty()) {
@@ -127,11 +94,7 @@ class HeadUnitPreviewActivity : AppCompatActivity() {
         }
 
         val photo = photos[currentIndex]
-        val bmp = PhotoRepository.loadCarBitmap(
-            photo.file,
-            800,
-            "Reserved for Kayalvizhi ❤️ • ${stats.daysTogether} Days"
-        )
+        val bmp = PhotoRepository.loadCarBitmap(photo.file, 800, null)
         binding.ivCarPhoto.setImageBitmap(bmp)
         binding.tvCarTitle.text = "$greeting • ${photo.index}/${photo.total}"
         binding.tvCarSubtitle.text = if (reservedNote.isNotEmpty()) "$reservedNote • $annivText" else annivText

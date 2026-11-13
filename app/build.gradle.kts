@@ -11,8 +11,8 @@ android {
         applicationId = "com.lovedrive.auto"
         minSdk = 26
         targetSdk = 34
-        versionCode = 6
-        versionName = "4.2"
+        versionCode = 7
+        versionName = "4.3"
     }
 
     buildTypes {

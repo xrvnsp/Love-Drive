@@ -218,7 +218,7 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
         }
 
         val photo = photos[currentIndex]
-        val art: Bitmap? = PhotoRepository.loadCarBitmap(photo.file, 800, "Reserved for Kayalvizhi ❤️ • ${PhotoRepository.getAnniversaryStats(this).daysTogether} Days")
+        val art: Bitmap? = PhotoRepository.loadCarBitmap(photo.file, 800, null)
         val intervalMs = PhotoRepository.getIntervalSeconds(this) * 1000L
         val (title, subtitle) = buildDisplayStrings(photo.index, photo.total)
 
