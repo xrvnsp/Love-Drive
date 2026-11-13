@@ -318,8 +318,7 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
             .build()
     }
 
-    private fun createNotificationChannel()
-        voiceHelper = VoiceGreetingHelper(this) {
+    private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
