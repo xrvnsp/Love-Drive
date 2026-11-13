@@ -9,12 +9,17 @@ import com.lovedrive.auto.databinding.ActivityHeadUnitPreviewBinding
 
 class HeadUnitPreviewActivity : AppCompatActivity() {
 
+    companion object {
+        const val EXTRA_START_LETTER = "start_letter"
+    }
+
     private lateinit var binding: ActivityHeadUnitPreviewBinding
     private val handler = Handler(Looper.getMainLooper())
     private var photos: List<LovePhoto> = emptyList()
     private var currentIndex = 0
     private var elapsedTick = 0
     private var isSplitMode = true
+    private var isLetterPlaying = false
 
     private val tickRunnable = object : Runnable {
         override fun run() {
@@ -38,8 +43,16 @@ class HeadUnitPreviewActivity : AppCompatActivity() {
         photos = PhotoRepository.getPhotos(this)
 
         binding.btnBack.setOnClickListener { finish() }
-        binding.btnModeSplit.setOnClickListener { setSplitMode(true) }
+        binding.btnModeSplit.setOnClickListener { val startWithLetter = intent.getBooleanExtra(EXTRA_START_LETTER, false)
+        isLetterPlaying = startWithLetter
+        setSplitMode(!startWithLetter)
+        updateLetterTicker() }
         binding.btnModeFull.setOnClickListener { setSplitMode(false) }
+        binding.btnToggleLetter.setOnClickListener {
+            isLetterPlaying = !isLetterPlaying
+            if (isLetterPlaying) setSplitMode(false)
+            updateLetterTicker()
+        }
 
         // Tap photo to advance to next photo cleanly without on-screen buttons
         binding.ivCarPhoto.setOnClickListener {
@@ -63,7 +76,10 @@ class HeadUnitPreviewActivity : AppCompatActivity() {
             }
         }
 
-        setSplitMode(true)
+        val startWithLetter = intent.getBooleanExtra(EXTRA_START_LETTER, false)
+        isLetterPlaying = startWithLetter
+        setSplitMode(!startWithLetter)
+        updateLetterTicker()
         renderPhoto()
         if (photos.isNotEmpty()) {
             handler.postDelayed(tickRunnable, 1000L)
@@ -75,7 +91,23 @@ class HeadUnitPreviewActivity : AppCompatActivity() {
         binding.panelMaps.visibility = if (isSplit) View.VISIBLE else View.GONE
         binding.btnModeSplit.alpha = if (isSplit) 1.0f else 0.6f
         binding.btnModeFull.alpha = if (isSplit) 0.6f else 1.0f
+        updateLetterTicker()
         renderPhoto()
+    }
+
+    private fun updateLetterTicker() {
+        val letter = PhotoRepository.getLoveLetter(this)
+        val show = isLetterPlaying && !isSplitMode && letter.isNotBlank()
+        if (show) {
+            binding.tvLetterTicker.visibility = View.VISIBLE
+            binding.tvLetterTicker.text = "   💌   $letter   •   $letter   "
+            binding.tvLetterTicker.isSelected = true
+            binding.btnToggleLetter.alpha = 1.0f
+        } else {
+            binding.tvLetterTicker.visibility = View.GONE
+            binding.tvLetterTicker.isSelected = false
+            binding.btnToggleLetter.alpha = 0.6f
+        }
     }
 
     private fun renderPhoto() {

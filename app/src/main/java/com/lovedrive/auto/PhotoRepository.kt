@@ -56,6 +56,7 @@ object PhotoRepository {
     private const val KEY_MARRIAGE_DATE = "marriage_date"
     private const val KEY_HIDE_SEEKBAR = "hide_seekbar"
     private const val KEY_VOICE_GREETING = "voice_greeting"
+    private const val KEY_LOVE_LETTER = "love_letter"
     private const val DEFAULT_MARRIAGE_DATE = "2024-01-21"
     private const val PHOTO_DIR = "love_drive_photos"
 
@@ -363,6 +364,20 @@ object PhotoRepository {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .edit()
             .putString(KEY_MARRIAGE_DATE, isoDate)
+            .apply()
+    }
+
+    fun getLoveLetter(context: Context): String =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getString(
+                KEY_LOVE_LETTER,
+                "Dear Kayalvizhi ❤️ Every mile with you is my favorite memory. Front seat is forever yours. Every drive begins with love. 💌"
+            ) ?: ""
+
+    fun setLoveLetter(context: Context, letter: String) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putString(KEY_LOVE_LETTER, letter.trim())
             .apply()
     }
 

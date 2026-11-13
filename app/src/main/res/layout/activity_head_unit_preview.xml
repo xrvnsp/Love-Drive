@@ -54,7 +54,19 @@
             app:cornerRadius="8dp" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnModeFull"
+            android:id="@+id/btnToggleLetter"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:layout_marginEnd="6dp"
+            android:text="💌 Scroll"
+            android:textSize="11sp"
+            app:cornerRadius="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnModeFull" 
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
@@ -220,6 +232,25 @@
                                     android:textColor="#F8BBD0"
                                     android:textSize="11sp" />
                             </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/tvLetterTicker"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#2A0F1E"
+                                android:ellipsize="marquee"
+                                android:focusable="true"
+                                android:focusableInTouchMode="true"
+                                android:marqueeRepeatLimit="marquee_forever"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="6dp"
+                                android:scrollHorizontally="true"
+                                android:singleLine="true"
+                                android:text="💌 Dear Kayalvizhi ❤️"
+                                android:textColor="#FDE68A"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                android:visibility="gone" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>

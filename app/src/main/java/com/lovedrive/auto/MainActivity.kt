@@ -2,6 +2,8 @@ package com.lovedrive.auto
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.EditText
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -84,6 +86,10 @@ class MainActivity : AppCompatActivity() {
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
 
+        binding.btnLoveLetter.setOnClickListener {
+            showLetterDialog()
+        }
+
         binding.btnPreviewHeadUnit.setOnClickListener {
             startActivity(Intent(this, HeadUnitPreviewActivity::class.java))
         }
@@ -95,6 +101,32 @@ class MainActivity : AppCompatActivity() {
         }
 
         refreshList()
+    }
+
+    private fun showLetterDialog() {
+        val input = EditText(this).apply {
+            setText(PhotoRepository.getLoveLetter(this@MainActivity))
+            hint = "Write your love letter for Kayalvizhi..."
+            minLines = 3
+            setPadding(48, 32, 48, 32)
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle("💌 Love Letter Ticker")
+            .setMessage("Plays as a news-style scroll along the bottom in fullscreen:")
+            .setView(input)
+            .setPositiveButton("Play Fullscreen") { _, _ ->
+                PhotoRepository.setLoveLetter(this, input.text.toString())
+                startActivity(
+                    Intent(this, HeadUnitPreviewActivity::class.java).apply {
+                        putExtra(HeadUnitPreviewActivity.EXTRA_START_LETTER, true)
+                    }
+                )
+            }
+            .setNeutralButton("Save Only") { _, _ ->
+                PhotoRepository.setLoveLetter(this, input.text.toString())
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun refreshAnniversaryCard() {

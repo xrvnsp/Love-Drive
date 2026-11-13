@@ -28,7 +28,7 @@
             android:background="#2A1624"
             android:paddingHorizontal="10dp"
             android:paddingVertical="4dp"
-            android:text="v4.6"
+            android:text="v4.7"
             android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="#FF6B9D" />
@@ -177,16 +177,35 @@
             app:cornerRadius="12dp" />
     </LinearLayout>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnPreviewHeadUnit"
-        style="@style/Widget.Material3.Button.OutlinedButton"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:text="🚗 Preview Head Unit (1280×720 Landscape)"
-        android:textColor="#FF80AB"
-        app:strokeColor="#E91E63"
-        app:cornerRadius="12dp" />
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPreviewHeadUnit"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.2"
+            android:layout_marginEnd="8dp"
+            android:text="🚗 Preview (1280×720)"
+            android:textColor="#FF80AB"
+            app:strokeColor="#E91E63"
+            app:cornerRadius="12dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLoveLetter"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.8"
+            android:text="💌 Letter"
+            android:textColor="#FDE68A"
+            app:strokeColor="#F59E0B"
+            app:cornerRadius="12dp" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tvCount" 
