@@ -43,6 +43,8 @@ class MainActivity : AppCompatActivity() {
         binding.rvPhotos.layoutManager = GridLayoutManager(this, 3)
         binding.rvPhotos.adapter = adapter
 
+        refreshAnniversaryCard()
+
         binding.etSubtitle.setText(PhotoRepository.getSubtitle(this))
         binding.etSubtitle.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -52,6 +54,12 @@ class MainActivity : AppCompatActivity() {
                 notifyServiceReload()
             }
         })
+
+        binding.switchHideSeekbar.isChecked = PhotoRepository.getHideSeekbar(this)
+        binding.switchHideSeekbar.setOnCheckedChangeListener { _, isChecked ->
+            PhotoRepository.setHideSeekbar(this, isChecked)
+            notifyServiceReload()
+        }
 
         val savedInterval = PhotoRepository.getIntervalSeconds(this)
         binding.sliderInterval.value = savedInterval.toFloat()
@@ -73,6 +81,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         refreshList()
+    }
+
+    private fun refreshAnniversaryCard() {
+        val stats = PhotoRepository.getAnniversaryStats(this)
+        val ord = PhotoRepository.formatOrdinal(stats.nextAnniversaryNumber)
+        binding.tvDaysTogether.text = "${stats.daysTogether} Days Together (Since Jan 21, 2024)"
+        binding.tvNextAnniversary.text = if (stats.isAnniversaryToday) {
+            "Happy $ord Anniversary Today!"
+        } else {
+            "${stats.daysToNextAnniversary} days until $ord Anniversary (${stats.nextDateFormatted})"
+        }
     }
 
     private fun refreshList() {
