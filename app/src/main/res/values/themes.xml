@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.LoveDrive" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">#C2185B</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#AD1457</item>
+        <item name="android:statusBarColor">#880E4F</item>
+    </style>
+</resources>
