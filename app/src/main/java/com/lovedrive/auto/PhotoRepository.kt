@@ -200,7 +200,7 @@ object PhotoRepository {
 
     fun getSubtitle(context: Context): String =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .getString(KEY_SUBTITLE, "") ?: ""
+            .getString(KEY_SUBTITLE, "Saravana ❤️ Kayalvizhi") ?: "Saravana ❤️ Kayalvizhi"
 
     fun setSubtitle(context: Context, subtitle: String) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
