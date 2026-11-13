@@ -57,6 +57,7 @@ object PhotoRepository {
     private const val KEY_HIDE_SEEKBAR = "hide_seekbar"
     private const val KEY_VOICE_GREETING = "voice_greeting"
     private const val KEY_LOVE_LETTER = "love_letter"
+    private const val KEY_CAR_TICKER = "car_ticker"
     private const val DEFAULT_MARRIAGE_DATE = "2024-01-21"
     private const val PHOTO_DIR = "love_drive_photos"
 
@@ -346,8 +347,7 @@ object PhotoRepository {
 
     fun getSubtitle(context: Context): String =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .getString(KEY_SUBTITLE, "Front Seat Reserved for Passenger Princess 👑❤️")
-            ?: "Front Seat Reserved for Passenger Princess 👑❤️"
+            .getString(KEY_SUBTITLE, "") ?: ""
 
     fun setSubtitle(context: Context, subtitle: String) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -365,6 +365,40 @@ object PhotoRepository {
             .edit()
             .putString(KEY_MARRIAGE_DATE, isoDate)
             .apply()
+    }
+
+    fun getCarTickerEnabled(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getBoolean(KEY_CAR_TICKER, true)
+
+    fun setCarTickerEnabled(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_CAR_TICKER, enabled)
+            .apply()
+    }
+
+    fun renderTickerRibbonOnBitmap(base: Bitmap, tickerWindow: String): Bitmap {
+        val out = base.copy(Bitmap.Config.ARGB_8888, true)
+        val canvas = Canvas(out)
+        val w = out.width.toFloat()
+        val h = out.height.toFloat()
+        val barH = h * 0.075f
+        val barPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.argb(185, 36, 10, 26)
+        }
+        canvas.drawRect(0f, h - barH, w, h, barPaint)
+
+        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.rgb(253, 230, 138)
+            textSize = h * 0.035f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            textAlign = Paint.Align.CENTER
+        }
+        val fm = textPaint.fontMetrics
+        val textY = (h - barH / 2f) - (fm.ascent + fm.descent) / 2f
+        canvas.drawText(tickerWindow, w / 2f, textY, textPaint)
+        return out
     }
 
     fun getLoveLetter(context: Context): String =

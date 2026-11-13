@@ -114,16 +114,20 @@ class MainActivity : AppCompatActivity() {
             .setTitle("💌 Love Letter Ticker")
             .setMessage("Plays as a news-style scroll along the bottom in fullscreen:")
             .setView(input)
-            .setPositiveButton("Play Fullscreen") { _, _ ->
+            .setPositiveButton("Play on Car & Fullscreen") { _, _ ->
                 PhotoRepository.setLoveLetter(this, input.text.toString())
+                PhotoRepository.setCarTickerEnabled(this, true)
+                notifyServiceReload()
                 startActivity(
                     Intent(this, HeadUnitPreviewActivity::class.java).apply {
                         putExtra(HeadUnitPreviewActivity.EXTRA_START_LETTER, true)
                     }
                 )
             }
-            .setNeutralButton("Save Only") { _, _ ->
+            .setNeutralButton("Send to Car Only") { _, _ ->
                 PhotoRepository.setLoveLetter(this, input.text.toString())
+                PhotoRepository.setCarTickerEnabled(this, true)
+                notifyServiceReload()
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -132,7 +136,7 @@ class MainActivity : AppCompatActivity() {
     private fun refreshAnniversaryCard() {
         val stats = PhotoRepository.getAnniversaryStats(this)
         val ord = PhotoRepository.formatOrdinal(stats.nextAnniversaryNumber)
-        binding.tvGreeting.text = "${PhotoRepository.getTimeGreeting("Kayalvizhi")} • Front Seat Reserved ❤️"
+        binding.tvGreeting.text = PhotoRepository.getTimeGreeting("Kayalvizhi")
         binding.tvDaysTogether.text = "${stats.daysTogether} Days Together (Since Jan 21, 2024)"
         val bday = PhotoRepository.getNextBirthdayReminder()
         binding.tvNextBirthday.text = if (bday.isToday) {

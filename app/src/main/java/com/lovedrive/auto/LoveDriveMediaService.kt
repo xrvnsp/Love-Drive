@@ -27,17 +27,23 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
         private const val ROOT_ID = "love_drive_root"
         private const val CHANNEL_ID = "love_drive_playback"
         private const val NOTIFICATION_ID = 1001
+        private const val CUSTOM_ACTION_LETTER = "com.lovedrive.auto.CUSTOM_ACTION_LETTER"
         const val ACTION_RELOAD = "com.lovedrive.auto.ACTION_RELOAD"
         const val ACTION_TOGGLE = "com.lovedrive.auto.ACTION_TOGGLE"
+        const val ACTION_TOGGLE_CAR_TICKER = "com.lovedrive.auto.ACTION_TOGGLE_CAR_TICKER"
     }
 
     private lateinit var mediaSession: MediaSessionCompat
+    private lateinit var voiceHelper: VoiceGreetingHelper
     private val handler = Handler(Looper.getMainLooper())
     private var photos: List<LovePhoto> = emptyList()
     private var currentIndex = 0
     private var isPlaying = false
-    private lateinit var voiceHelper: VoiceGreetingHelper
     private var hasGreetedThisSession = false
+    private var isCarTickerActive = true
+    private var tickerOffset = 0
+    private var cachedPhotoId: String? = null
+    private var cachedArt: Bitmap? = null
 
     private val slideRunnable = object : Runnable {
         override fun run() {
@@ -48,10 +54,24 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
         }
     }
 
+    // Method 1 + 2: Live Metadata Marquee Ticker & Image Banner Scroll on the Head Unit
+    private val tickerRunnable = object : Runnable {
+        override fun run() {
+            if (!isPlaying || !isCarTickerActive) return
+            val fullStream = buildTickerStream()
+            if (fullStream.isNotEmpty()) {
+                tickerOffset = (tickerOffset + 3) % fullStream.length
+                updateCurrentMetadata(fromTicker = true)
+            }
+            handler.postDelayed(this, 650L)
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
         voiceHelper = VoiceGreetingHelper(this)
+        isCarTickerActive = PhotoRepository.getCarTickerEnabled(this)
 
         mediaSession = MediaSessionCompat(this, "LoveDriveSession").apply {
             setCallback(sessionCallback)
@@ -65,9 +85,21 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         MediaButtonReceiver.handleIntent(mediaSession, intent)
         when (intent?.action) {
-            ACTION_RELOAD -> reloadPhotos(startIfAvailable = isPlaying)
+            ACTION_RELOAD -> {
+                cachedPhotoId = null
+                cachedArt = null
+                isCarTickerActive = PhotoRepository.getCarTickerEnabled(this)
+                reloadPhotos(startIfAvailable = isPlaying)
+            }
             ACTION_TOGGLE -> {
                 if (isPlaying) pauseSlideshow() else startSlideshow()
+            }
+            ACTION_TOGGLE_CAR_TICKER -> {
+                isCarTickerActive = !isCarTickerActive
+                PhotoRepository.setCarTickerEnabled(this, isCarTickerActive)
+                rescheduleTicker()
+                updateCurrentMetadata()
+                updatePlaybackState(if (isPlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED)
             }
         }
         return START_STICKY
@@ -91,7 +123,7 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
             val desc = MediaDescriptionCompat.Builder()
                 .setMediaId(photo.id)
                 .setTitle("Photo ${photo.index} of ${photo.total}")
-                .setSubtitle("${stats.daysTogether} Days Together")
+                .setSubtitle("${stats.daysTogether}d Together")
                 .setIconBitmap(PhotoRepository.loadCarBitmap(photo.file, 256))
                 .build()
             MediaBrowserCompat.MediaItem(desc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE)
@@ -129,6 +161,17 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
             if (idx >= 0) currentIndex = idx
             startSlideshow()
         }
+
+        // Method 3: Head-Unit Custom Action Button to toggle the Letter Scroll directly from the car screen
+        override fun onCustomAction(action: String?, extras: Bundle?) {
+            if (action == CUSTOM_ACTION_LETTER) {
+                isCarTickerActive = !isCarTickerActive
+                PhotoRepository.setCarTickerEnabled(this@LoveDriveMediaService, isCarTickerActive)
+                rescheduleTicker()
+                updateCurrentMetadata()
+                updatePlaybackState(if (isPlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED)
+            }
+        }
     }
 
     private fun reloadPhotos(startIfAvailable: Boolean) {
@@ -159,11 +202,13 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
         updatePlaybackState(PlaybackStateCompat.STATE_PLAYING)
         startForeground(NOTIFICATION_ID, buildNotification())
         rescheduleIfPlaying()
+        rescheduleTicker()
     }
 
     private fun pauseSlideshow() {
         isPlaying = false
         handler.removeCallbacks(slideRunnable)
+        handler.removeCallbacks(tickerRunnable)
         updatePlaybackState(PlaybackStateCompat.STATE_PAUSED)
         if (photos.isNotEmpty()) {
             val nm = getSystemService(NotificationManager::class.java)
@@ -179,25 +224,26 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
         }
     }
 
+    private fun rescheduleTicker() {
+        handler.removeCallbacks(tickerRunnable)
+        if (isPlaying && isCarTickerActive) {
+            handler.postDelayed(tickerRunnable, 650L)
+        }
+    }
+
     private fun advanceBy(delta: Int) {
         if (photos.isEmpty()) return
         currentIndex = ((currentIndex + delta) % photos.size + photos.size) % photos.size
+        cachedPhotoId = null
+        cachedArt = null
         updateCurrentMetadata()
         updatePlaybackState(if (isPlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED)
         val nm = getSystemService(NotificationManager::class.java)
         nm.notify(NOTIFICATION_ID, buildNotification())
     }
 
-    private fun buildDisplayStrings(photoIndex: Int, total: Int): Pair<String, String> {
+    private fun buildStaticSummary(): String {
         val stats = PhotoRepository.getAnniversaryStats(this)
-        val greeting = PhotoRepository.getTimeGreeting("Kayalvizhi")
-        val reservedNote = PhotoRepository.getSubtitle(this)
-        val title = if (total > 0) {
-            "$greeting • $photoIndex/$total"
-        } else {
-            greeting
-        }
-
         val ord = PhotoRepository.formatOrdinal(stats.nextAnniversaryNumber)
         val annivText = if (stats.isAnniversaryToday) {
             "${stats.daysTogether}d • Happy $ord Anniv!"
@@ -206,11 +252,37 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
         }
         val bday = PhotoRepository.getNextBirthdayReminder()
         val bdaySuffix = if (bday.daysUntil in 1..7) " • 🎂 ${bday.name} in ${bday.daysUntil}d" else ""
-        val subtitle = (if (reservedNote.isNotEmpty()) "$reservedNote • $annivText" else annivText) + bdaySuffix
+        val customNote = PhotoRepository.getSubtitle(this)
+        return (if (customNote.isNotEmpty()) "$customNote • $annivText" else annivText) + bdaySuffix
+    }
+
+    private fun buildTickerStream(): String {
+        val letter = PhotoRepository.getLoveLetter(this).trim()
+        val stats = buildStaticSummary()
+        val base = if (letter.isNotEmpty()) "💌 $letter   •   $stats" else stats
+        return "$base   •   "
+    }
+
+    private fun getTickerWindow(width: Int = 36): String {
+        val stream = buildTickerStream()
+        if (stream.isEmpty()) return ""
+        val doubled = stream + stream
+        val start = tickerOffset % stream.length
+        return doubled.substring(start, minOf(start + width, doubled.length))
+    }
+
+    private fun buildDisplayStrings(photoIndex: Int, total: Int): Pair<String, String> {
+        val greeting = PhotoRepository.getTimeGreeting("Kayalvizhi")
+        val title = if (total > 0) "$greeting • $photoIndex/$total" else greeting
+        val subtitle = if (isCarTickerActive) {
+            getTickerWindow(36)
+        } else {
+            buildStaticSummary()
+        }
         return title to subtitle
     }
 
-    private fun updateCurrentMetadata() {
+    private fun updateCurrentMetadata(fromTicker: Boolean = false) {
         val hideSeekbar = PhotoRepository.getHideSeekbar(this)
 
         if (photos.isEmpty()) {
@@ -227,7 +299,22 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
         }
 
         val photo = photos[currentIndex]
-        val art: Bitmap? = PhotoRepository.loadCarBitmap(photo.file, 800, null)
+        val baseArt: Bitmap? = if (cachedPhotoId == photo.id && cachedArt != null) {
+            cachedArt
+        } else {
+            PhotoRepository.loadCarBitmap(photo.file, 800, null).also {
+                cachedPhotoId = photo.id
+                cachedArt = it
+            }
+        }
+
+        // Method 2: Also draw the scrolling ticker window into the bottom of the car image frame
+        val art: Bitmap? = if (baseArt != null && isCarTickerActive) {
+            PhotoRepository.renderTickerRibbonOnBitmap(baseArt, getTickerWindow(34))
+        } else {
+            baseArt
+        }
+
         val intervalMs = PhotoRepository.getIntervalSeconds(this) * 1000L
         val (title, subtitle) = buildDisplayStrings(photo.index, photo.total)
 
@@ -243,7 +330,9 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
 
         if (art != null) {
             metaBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, art)
-            metaBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, art)
+            if (!fromTicker) {
+                metaBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, art)
+            }
         }
 
         mediaSession.setMetadata(metaBuilder.build())
@@ -264,6 +353,13 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
         val pbState = PlaybackStateCompat.Builder()
             .setActions(actions)
             .setState(state, pos, speed)
+            .addCustomAction(
+                PlaybackStateCompat.CustomAction.Builder(
+                    CUSTOM_ACTION_LETTER,
+                    if (isCarTickerActive) "Letter Scroll: ON" else "Letter Scroll: OFF",
+                    R.drawable.ic_love_drive
+                ).build()
+            )
             .build()
 
         mediaSession.setPlaybackState(pbState)
@@ -331,6 +427,7 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
 
     override fun onDestroy() {
         handler.removeCallbacks(slideRunnable)
+        handler.removeCallbacks(tickerRunnable)
         voiceHelper.shutdown()
         mediaSession.release()
         super.onDestroy()
