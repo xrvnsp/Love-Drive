@@ -28,7 +28,7 @@
             android:background="#2A1624"
             android:paddingHorizontal="10dp"
             android:paddingVertical="4dp"
-            android:text="v4.4"
+            android:text="v4.5"
             android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="#FF6B9D" />
@@ -76,6 +76,16 @@
                 android:text="69 days until 3rd Anniversary (Jan 21, 2027)"
                 android:textSize="13sp"
                 android:textColor="#F8BBD0" />
+
+            <TextView
+                android:id="@+id/tvNextBirthday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="🎂 Next Birthday: Loading..."
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#FDE68A" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

@@ -92,6 +92,12 @@ class MainActivity : AppCompatActivity() {
         val ord = PhotoRepository.formatOrdinal(stats.nextAnniversaryNumber)
         binding.tvGreeting.text = "${PhotoRepository.getTimeGreeting("Kayalvizhi")} • Front Seat Reserved ❤️"
         binding.tvDaysTogether.text = "${stats.daysTogether} Days Together (Since Jan 21, 2024)"
+        val bday = PhotoRepository.getNextBirthdayReminder()
+        binding.tvNextBirthday.text = if (bday.isToday) {
+            "🎉 Today: ${bday.name}'s Birthday!"
+        } else {
+            "🎂 Next Bday: ${bday.name} (${bday.dateFormatted} • ${bday.daysUntil}d)"
+        }
         binding.tvNextAnniversary.text = if (stats.isAnniversaryToday) {
             "Happy $ord Anniversary Today!"
         } else {

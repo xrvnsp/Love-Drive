@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Typeface
@@ -16,6 +17,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.MonthDay
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
@@ -34,6 +36,19 @@ data class AnniversaryStats(
     val nextDateFormatted: String
 )
 
+data class BirthdayEntry(
+    val month: Int,
+    val day: Int,
+    val name: String
+)
+
+data class BirthdayReminder(
+    val name: String,
+    val daysUntil: Long,
+    val dateFormatted: String,
+    val isToday: Boolean
+)
+
 object PhotoRepository {
     private const val PREFS = "love_drive_prefs"
     private const val KEY_SUBTITLE = "subtitle"
@@ -42,6 +57,43 @@ object PhotoRepository {
     private const val KEY_HIDE_SEEKBAR = "hide_seekbar"
     private const val DEFAULT_MARRIAGE_DATE = "2024-01-21"
     private const val PHOTO_DIR = "love_drive_photos"
+
+    private val BIRTHDAYS = listOf(
+        BirthdayEntry(4, 21, "Kayalvizhi (Wife)"),
+        BirthdayEntry(5, 17, "Sidique"),
+        BirthdayEntry(5, 20, "Mona"),
+        BirthdayEntry(5, 21, "Ragav & Renuga"),
+        BirthdayEntry(5, 31, "Saravana (My Bday)"),
+        BirthdayEntry(6, 4, "Sasi Sithi"),
+        BirthdayEntry(6, 6, "Ammu Sithi"),
+        BirthdayEntry(6, 29, "Felix"),
+        BirthdayEntry(8, 21, "Yoga"),
+        BirthdayEntry(10, 7, "Amma"),
+        BirthdayEntry(10, 20, "Surya"),
+        BirthdayEntry(12, 29, "Appa")
+    )
+
+    fun getNextBirthdayReminder(): BirthdayReminder {
+        val today = LocalDate.now()
+        var best: BirthdayReminder? = null
+
+        for (b in BIRTHDAYS) {
+            var target = LocalDate.of(today.year, b.month, b.day)
+            if (target.isBefore(today)) {
+                target = target.plusYears(1)
+            }
+            val days = ChronoUnit.DAYS.between(today, target)
+            if (best == null || days < best.daysUntil) {
+                best = BirthdayReminder(
+                    name = b.name,
+                    daysUntil = days,
+                    dateFormatted = target.format(DateTimeFormatter.ofPattern("MMM dd")),
+                    isToday = (days == 0L)
+                )
+            }
+        }
+        return best!!
+    }
 
     fun getPhotoDir(context: Context): File {
         val dir = File(context.filesDir, PHOTO_DIR)
@@ -66,6 +118,10 @@ object PhotoRepository {
     }
 
     fun getTimeGreeting(wifeName: String = "Kayalvizhi"): String {
+        val bday = getNextBirthdayReminder()
+        if (bday.isToday) {
+            return "🎂 Happy Birthday, ${bday.name}!"
+        }
         val hour = LocalTime.now().hour
         return when (hour) {
             in 5..11 -> "Good Morning, $wifeName ☀️"
@@ -164,34 +220,42 @@ object PhotoRepository {
         val out = Bitmap.createBitmap(targetW, targetH, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(out)
 
-        // Draw center-cropped, soft-blurred background filling the entire targetW x targetH frame
-        val tinyW = maxOf(16, (28f * targetW / maxOf(targetW, targetH)).toInt())
-        val tinyH = maxOf(16, (28f * targetH / maxOf(targetW, targetH)).toInt())
-        val tiny = Bitmap.createScaledBitmap(src, tinyW, tinyH, true)
-        val bgScale = maxOf(targetW.toFloat() / tinyW, targetH.toFloat() / tinyH)
-        val bgW = tinyW * bgScale
-        val bgH = tinyH * bgScale
+        // Multi-pass smooth blur background filling the entire targetW x targetH frame
+        val pass1 = Bitmap.createScaledBitmap(src, 48, 48, true)
+        val pass2 = Bitmap.createScaledBitmap(pass1, 20, 20, true)
+        pass1.recycle()
+        val bgScale = maxOf(targetW.toFloat() / 20f, targetH.toFloat() / 20f)
+        val bgW = 20f * bgScale
+        val bgH = 20f * bgScale
         val bgLeft = (targetW - bgW) / 2f
         val bgTop = (targetH - bgH) / 2f
         canvas.drawBitmap(
-            tiny,
-            Rect(0, 0, tinyW, tinyH),
+            pass2,
+            Rect(0, 0, 20, 20),
             RectF(bgLeft, bgTop, bgLeft + bgW, bgTop + bgH),
             Paint(Paint.FILTER_BITMAP_FLAG)
         )
-        tiny.recycle()
+        pass2.recycle()
 
-        val dimPaint = Paint().apply { color = Color.argb(105, 10, 8, 14) }
+        val dimPaint = Paint().apply { color = Color.argb(100, 10, 8, 14) }
         canvas.drawRect(0f, 0f, targetW.toFloat(), targetH.toFloat(), dimPaint)
 
-        // Draw full uncropped photo centered
+        // Draw full uncropped photo centered with soft rounded corners
         val scale = minOf(targetW.toFloat() / src.width, targetH.toFloat() / src.height)
         val drawW = src.width * scale
         val drawH = src.height * scale
         val left = (targetW - drawW) / 2f
         val top = (targetH - drawH) / 2f
         val dstRect = RectF(left, top, left + drawW, top + drawH)
+
+        val saveCount = canvas.save()
+        val clipPath = Path().apply {
+            val radius = minOf(drawW, drawH) * 0.03f
+            addRoundRect(dstRect, radius, radius, Path.Direction.CW)
+        }
+        canvas.clipPath(clipPath)
         canvas.drawBitmap(src, Rect(0, 0, src.width, src.height), dstRect, Paint(Paint.FILTER_BITMAP_FLAG))
+        canvas.restoreToCount(saveCount)
 
         if (!overlayBadge.isNullOrBlank()) {
             val minSide = minOf(targetW, targetH)

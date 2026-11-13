@@ -197,7 +197,9 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
         } else {
             "${stats.daysTogether}d • ${stats.daysToNextAnniversary}d to $ord Anniv"
         }
-        val subtitle = if (reservedNote.isNotEmpty()) "$reservedNote • $annivText" else annivText
+        val bday = PhotoRepository.getNextBirthdayReminder()
+        val bdaySuffix = if (bday.daysUntil in 1..7) " • 🎂 ${bday.name} in ${bday.daysUntil}d" else ""
+        val subtitle = (if (reservedNote.isNotEmpty()) "$reservedNote • $annivText" else annivText) + bdaySuffix
         return title to subtitle
     }
 
