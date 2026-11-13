@@ -8,17 +8,32 @@ import android.media.ExifInterface
 import android.net.Uri
 import java.io.File
 import java.io.FileOutputStream
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 data class LovePhoto(
     val id: String,
     val file: File,
-    val title: String
+    val index: Int,
+    val total: Int
+)
+
+data class AnniversaryStats(
+    val daysTogether: Long,
+    val daysToNextAnniversary: Long,
+    val nextAnniversaryNumber: Long,
+    val isAnniversaryToday: Boolean,
+    val nextDateFormatted: String
 )
 
 object PhotoRepository {
     private const val PREFS = "love_drive_prefs"
     private const val KEY_SUBTITLE = "subtitle"
     private const val KEY_INTERVAL_SEC = "interval_sec"
+    private const val KEY_MARRIAGE_DATE = "marriage_date"
+    private const val KEY_HIDE_SEEKBAR = "hide_seekbar"
+    private const val DEFAULT_MARRIAGE_DATE = "2024-01-21"
     private const val PHOTO_DIR = "love_drive_photos"
 
     fun getPhotoDir(context: Context): File {
@@ -37,8 +52,48 @@ object PhotoRepository {
             LovePhoto(
                 id = file.name,
                 file = file,
-                title = "Moment ${index + 1} of ${files.size}"
+                index = index + 1,
+                total = files.size
             )
+        }
+    }
+
+    fun getAnniversaryStats(context: Context): AnniversaryStats {
+        val dateStr = getMarriageDate(context)
+        val marriageDate = try {
+            LocalDate.parse(dateStr)
+        } catch (_: Exception) {
+            LocalDate.of(2024, 1, 21)
+        }
+        val today = LocalDate.now()
+        val daysTogether = ChronoUnit.DAYS.between(marriageDate, today).coerceAtLeast(0)
+
+        var nextAnniv = marriageDate.withYear(today.year)
+        if (nextAnniv.isBefore(today)) {
+            nextAnniv = nextAnniv.plusYears(1)
+        }
+        val daysToNext = ChronoUnit.DAYS.between(today, nextAnniv).coerceAtLeast(0)
+        val nextNumber = ChronoUnit.YEARS.between(marriageDate, nextAnniv).coerceAtLeast(1)
+        val isToday = (daysToNext == 0L)
+        val formatted = nextAnniv.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
+
+        return AnniversaryStats(
+            daysTogether = daysTogether,
+            daysToNextAnniversary = daysToNext,
+            nextAnniversaryNumber = nextNumber,
+            isAnniversaryToday = isToday,
+            nextDateFormatted = formatted
+        )
+    }
+
+    fun formatOrdinal(n: Long): String {
+        val mod100 = n % 100
+        if (mod100 in 11..13) return "${n}th"
+        return when (n % 10) {
+            1L -> "${n}st"
+            2L -> "${n}nd"
+            3L -> "${n}rd"
+            else -> "${n}th"
         }
     }
 
@@ -145,12 +200,34 @@ object PhotoRepository {
 
     fun getSubtitle(context: Context): String =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .getString(KEY_SUBTITLE, "Love Drive") ?: "Love Drive"
+            .getString(KEY_SUBTITLE, "") ?: ""
 
     fun setSubtitle(context: Context, subtitle: String) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .edit()
-            .putString(KEY_SUBTITLE, subtitle.ifBlank { "Love Drive" })
+            .putString(KEY_SUBTITLE, subtitle.trim())
+            .apply()
+    }
+
+    fun getMarriageDate(context: Context): String =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getString(KEY_MARRIAGE_DATE, DEFAULT_MARRIAGE_DATE) ?: DEFAULT_MARRIAGE_DATE
+
+    fun setMarriageDate(context: Context, isoDate: String) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putString(KEY_MARRIAGE_DATE, isoDate)
+            .apply()
+    }
+
+    fun getHideSeekbar(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getBoolean(KEY_HIDE_SEEKBAR, true)
+
+    fun setHideSeekbar(context: Context, hide: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_HIDE_SEEKBAR, hide)
             .apply()
     }
 
