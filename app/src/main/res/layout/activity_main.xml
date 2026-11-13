@@ -5,47 +5,76 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="#FFF8FA">
+    android:background="#0E0C12">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Love Drive"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:textColor="#880E4F" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Love Drive"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#2A1624"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:text="v3.0"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#FF6B9D" />
+    </LinearLayout>
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        app:cardCornerRadius="16dp"
-        app:cardBackgroundColor="#FCE4EC"
-        app:strokeWidth="0dp">
+        android:layout_marginTop="12dp"
+        app:cardCornerRadius="18dp"
+        app:cardBackgroundColor="#1B1320"
+        app:strokeColor="#E91E63"
+        app:strokeWidth="1dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="14dp">
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Saravana ❤️ Kayalvizhi"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#FF80AB" />
 
             <TextView
                 android:id="@+id/tvDaysTogether"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="0 Days Together"
-                android:textSize="20sp"
+                android:layout_marginTop="4dp"
+                android:text="1,027 Days Together"
+                android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="#880E4F" />
+                android:textColor="#FFFFFF" />
 
             <TextView
                 android:id="@+id/tvNextAnniversary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="Next Anniversary: Jan 21"
-                android:textSize="14sp"
-                android:textColor="#AD1457" />
+                android:layout_marginTop="4dp"
+                android:text="69 days until 3rd Anniversary (Jan 21, 2027)"
+                android:textSize="13sp"
+                android:textColor="#F8BBD0" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -53,13 +82,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:hint="Optional Couple Name Prefix"
+        android:hint="Car Display Subtitle"
+        app:boxStrokeColor="#E91E63"
+        app:hintTextColor="#FF80AB"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etSubtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
             android:singleLine="true" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -68,13 +100,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:text="Photo-Only Mode (Hide Seekbar on Car Screen)"
+        android:text="Photo-Only Mode (Hide Seekbar on Car)"
+        android:textColor="#E2E8F0"
         android:checked="true" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="2dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -86,7 +119,7 @@
             android:text="Slide Interval: 8s"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="#333333" />
+            android:textColor="#E2E8F0" />
 
         <com.google.android.material.slider.Slider
             android:id="@+id/sliderInterval"
@@ -109,9 +142,10 @@
             android:id="@+id/btnAddPhotos"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1.2"
+            android:layout_weight="1.25"
             android:layout_marginEnd="8dp"
             android:text="Pick Phone / Google Photos"
+            app:backgroundTint="#E91E63"
             app:cornerRadius="12dp" />
 
         <com.google.android.material.button.MaterialButton
@@ -119,7 +153,7 @@
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.8"
+            android:layout_weight="0.75"
             android:text="Start"
             app:cornerRadius="12dp" />
     </LinearLayout>
@@ -129,9 +163,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="0 photos ready for Android Auto"
+        android:text="0 photo(s) ready for Android Auto"
         android:textSize="13sp"
-        android:textColor="#666666" />
+        android:textColor="#94A3B8" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvPhotos"
