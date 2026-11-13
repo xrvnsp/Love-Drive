@@ -186,7 +186,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="0dp"
                                 android:layout_weight="1"
-                                android:scaleType="fitCenter"
+                                android:scaleType="centerCrop"
                                 android:contentDescription="Full uncropped photo" />
 
                             <LinearLayout
@@ -216,7 +216,7 @@
                                     android:ellipsize="end"
                                     android:gravity="center"
                                     android:maxLines="1"
-                                    android:text="Front Seat Reserved for Kayalvizhi ❤️"
+                                    android:text="Front Seat Reserved for Passenger Princess 👑❤️"
                                     android:textColor="#F8BBD0"
                                     android:textSize="11sp" />
                             </LinearLayout>

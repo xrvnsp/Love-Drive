@@ -139,9 +139,11 @@ object PhotoRepository {
 
     fun loadCarBitmap(
         file: File,
-        maxDim: Int = 800,
-        overlayBadge: String? = null
+        targetW: Int = 800,
+        overlayBadge: String? = null,
+        targetH: Int = targetW
     ): Bitmap? {
+        val maxDim = maxOf(targetW, targetH)
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(file.absolutePath, bounds)
         var sampleSize = 1
@@ -150,46 +152,62 @@ object PhotoRepository {
         }
         val opts = BitmapFactory.Options().apply { inSampleSize = sampleSize }
         val raw = BitmapFactory.decodeFile(file.absolutePath, opts) ?: return null
-        return blurFitSquare(raw, maxDim, overlayBadge)
+        return blurFitFrame(raw, targetW, targetH, overlayBadge)
     }
 
-    private fun blurFitSquare(src: Bitmap, targetSize: Int, overlayBadge: String?): Bitmap {
-        val out = Bitmap.createBitmap(targetSize, targetSize, Bitmap.Config.ARGB_8888)
+    private fun blurFitFrame(
+        src: Bitmap,
+        targetW: Int,
+        targetH: Int,
+        overlayBadge: String?
+    ): Bitmap {
+        val out = Bitmap.createBitmap(targetW, targetH, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(out)
 
-        // Draw darkened, soft-blurred background by downscaling and upscaling
-        val tiny = Bitmap.createScaledBitmap(src, 24, 24, true)
-        val bg = Bitmap.createScaledBitmap(tiny, targetSize, targetSize, true)
+        // Draw center-cropped, soft-blurred background filling the entire targetW x targetH frame
+        val tinyW = maxOf(16, (28f * targetW / maxOf(targetW, targetH)).toInt())
+        val tinyH = maxOf(16, (28f * targetH / maxOf(targetW, targetH)).toInt())
+        val tiny = Bitmap.createScaledBitmap(src, tinyW, tinyH, true)
+        val bgScale = maxOf(targetW.toFloat() / tinyW, targetH.toFloat() / tinyH)
+        val bgW = tinyW * bgScale
+        val bgH = tinyH * bgScale
+        val bgLeft = (targetW - bgW) / 2f
+        val bgTop = (targetH - bgH) / 2f
+        canvas.drawBitmap(
+            tiny,
+            Rect(0, 0, tinyW, tinyH),
+            RectF(bgLeft, bgTop, bgLeft + bgW, bgTop + bgH),
+            Paint(Paint.FILTER_BITMAP_FLAG)
+        )
         tiny.recycle()
-        canvas.drawBitmap(bg, 0f, 0f, null)
-        bg.recycle()
 
-        val dimPaint = Paint().apply { color = Color.argb(95, 10, 8, 14) }
-        canvas.drawRect(0f, 0f, targetSize.toFloat(), targetSize.toFloat(), dimPaint)
+        val dimPaint = Paint().apply { color = Color.argb(105, 10, 8, 14) }
+        canvas.drawRect(0f, 0f, targetW.toFloat(), targetH.toFloat(), dimPaint)
 
         // Draw full uncropped photo centered
-        val scale = minOf(targetSize.toFloat() / src.width, targetSize.toFloat() / src.height)
+        val scale = minOf(targetW.toFloat() / src.width, targetH.toFloat() / src.height)
         val drawW = src.width * scale
         val drawH = src.height * scale
-        val left = (targetSize - drawW) / 2f
-        val top = (targetSize - drawH) / 2f
+        val left = (targetW - drawW) / 2f
+        val top = (targetH - drawH) / 2f
         val dstRect = RectF(left, top, left + drawW, top + drawH)
         canvas.drawBitmap(src, Rect(0, 0, src.width, src.height), dstRect, Paint(Paint.FILTER_BITMAP_FLAG))
 
         if (!overlayBadge.isNullOrBlank()) {
+            val minSide = minOf(targetW, targetH)
             val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = Color.WHITE
-                textSize = targetSize * 0.036f
+                textSize = minSide * 0.036f
                 typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                 textAlign = Paint.Align.CENTER
             }
-            val pillH = targetSize * 0.085f
-            val pillMargin = targetSize * 0.035f
+            val pillH = minSide * 0.085f
+            val pillMargin = minSide * 0.035f
             val pillRect = RectF(
                 pillMargin,
-                targetSize - pillH - pillMargin,
-                targetSize - pillMargin,
-                targetSize - pillMargin
+                targetH - pillH - pillMargin,
+                targetW - pillMargin,
+                targetH - pillMargin
             )
             val pillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = Color.argb(175, 24, 12, 22)
@@ -262,8 +280,8 @@ object PhotoRepository {
 
     fun getSubtitle(context: Context): String =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .getString(KEY_SUBTITLE, "Front Seat Reserved for Kayalvizhi ❤️")
-            ?: "Front Seat Reserved for Kayalvizhi ❤️"
+            .getString(KEY_SUBTITLE, "Front Seat Reserved for Passenger Princess 👑❤️")
+            ?: "Front Seat Reserved for Passenger Princess 👑❤️"
 
     fun setSubtitle(context: Context, subtitle: String) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)

@@ -14,6 +14,7 @@ class HeadUnitPreviewActivity : AppCompatActivity() {
     private var photos: List<LovePhoto> = emptyList()
     private var currentIndex = 0
     private var elapsedTick = 0
+    private var isSplitMode = true
 
     private val tickRunnable = object : Runnable {
         override fun run() {
@@ -70,9 +71,11 @@ class HeadUnitPreviewActivity : AppCompatActivity() {
     }
 
     private fun setSplitMode(isSplit: Boolean) {
+        isSplitMode = isSplit
         binding.panelMaps.visibility = if (isSplit) View.VISIBLE else View.GONE
         binding.btnModeSplit.alpha = if (isSplit) 1.0f else 0.6f
         binding.btnModeFull.alpha = if (isSplit) 0.6f else 1.0f
+        renderPhoto()
     }
 
     private fun renderPhoto() {
@@ -94,7 +97,9 @@ class HeadUnitPreviewActivity : AppCompatActivity() {
         }
 
         val photo = photos[currentIndex]
-        val bmp = PhotoRepository.loadCarBitmap(photo.file, 800, null)
+        val targetW = if (isSplitMode) 560 else 1280
+        val targetH = if (isSplitMode) 620 else 640
+        val bmp = PhotoRepository.loadCarBitmap(photo.file, targetW, null, targetH)
         binding.ivCarPhoto.setImageBitmap(bmp)
         binding.tvCarTitle.text = "$greeting • ${photo.index}/${photo.total}"
         binding.tvCarSubtitle.text = if (reservedNote.isNotEmpty()) "$reservedNote • $annivText" else annivText
