@@ -55,6 +55,7 @@ object PhotoRepository {
     private const val KEY_INTERVAL_SEC = "interval_sec"
     private const val KEY_MARRIAGE_DATE = "marriage_date"
     private const val KEY_HIDE_SEEKBAR = "hide_seekbar"
+    private const val KEY_VOICE_GREETING = "voice_greeting"
     private const val DEFAULT_MARRIAGE_DATE = "2024-01-21"
     private const val PHOTO_DIR = "love_drive_photos"
 
@@ -362,6 +363,17 @@ object PhotoRepository {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .edit()
             .putString(KEY_MARRIAGE_DATE, isoDate)
+            .apply()
+    }
+
+    fun getVoiceGreetingEnabled(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getBoolean(KEY_VOICE_GREETING, true)
+
+    fun setVoiceGreetingEnabled(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_VOICE_GREETING, enabled)
             .apply()
     }
 

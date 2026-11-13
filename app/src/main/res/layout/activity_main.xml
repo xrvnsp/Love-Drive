@@ -28,7 +28,7 @@
             android:background="#2A1624"
             android:paddingHorizontal="10dp"
             android:paddingVertical="4dp"
-            android:text="v4.5"
+            android:text="v4.6"
             android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="#FF6B9D" />
@@ -115,10 +115,18 @@
         android:textColor="#E2E8F0"
         android:checked="true" />
 
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switchVoiceGreeting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Male Voice Greeting on Start"
+        android:textColor="#E2E8F0"
+        android:checked="true" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="2dp" 
         android:gravity="center_vertical"
         android:orientation="horizontal">
 

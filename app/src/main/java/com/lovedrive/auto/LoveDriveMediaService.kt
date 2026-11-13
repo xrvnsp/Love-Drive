@@ -36,6 +36,8 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
     private var photos: List<LovePhoto> = emptyList()
     private var currentIndex = 0
     private var isPlaying = false
+    private lateinit var voiceHelper: VoiceGreetingHelper
+    private var hasGreetedThisSession = false
 
     private val slideRunnable = object : Runnable {
         override fun run() {
@@ -49,6 +51,7 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        voiceHelper = VoiceGreetingHelper(this)
 
         mediaSession = MediaSessionCompat(this, "LoveDriveSession").apply {
             setCallback(sessionCallback)
@@ -148,6 +151,10 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
             return
         }
         isPlaying = true
+        if (!hasGreetedThisSession) {
+            hasGreetedThisSession = true
+            voiceHelper.speakStartupGreeting()
+        }
         updateCurrentMetadata()
         updatePlaybackState(PlaybackStateCompat.STATE_PLAYING)
         startForeground(NOTIFICATION_ID, buildNotification())
@@ -311,7 +318,8 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
             .build()
     }
 
-    private fun createNotificationChannel() {
+    private fun createNotificationChannel()
+        voiceHelper = VoiceGreetingHelper(this) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
@@ -324,6 +332,7 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
 
     override fun onDestroy() {
         handler.removeCallbacks(slideRunnable)
+        voiceHelper.shutdown()
         mediaSession.release()
         super.onDestroy()
     }

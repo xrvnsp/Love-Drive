@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: PhotoAdapter
+    private lateinit var voiceHelper: VoiceGreetingHelper
 
     private val pickMedia = registerForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(50)
@@ -43,6 +44,9 @@ class MainActivity : AppCompatActivity() {
         binding.rvPhotos.layoutManager = GridLayoutManager(this, 3)
         binding.rvPhotos.adapter = adapter
 
+        voiceHelper = VoiceGreetingHelper(this)
+        voiceHelper.speakStartupGreeting()
+
         refreshAnniversaryCard()
 
         binding.etSubtitle.setText(PhotoRepository.getSubtitle(this))
@@ -54,6 +58,12 @@ class MainActivity : AppCompatActivity() {
                 notifyServiceReload()
             }
         })
+
+        binding.switchVoiceGreeting.isChecked = PhotoRepository.getVoiceGreetingEnabled(this)
+        binding.switchVoiceGreeting.setOnCheckedChangeListener { _, isChecked ->
+            PhotoRepository.setVoiceGreetingEnabled(this, isChecked)
+            if (isChecked) voiceHelper.speakStartupGreeting()
+        }
 
         binding.switchHideSeekbar.isChecked = PhotoRepository.getHideSeekbar(this)
         binding.switchHideSeekbar.setOnCheckedChangeListener { _, isChecked ->
@@ -87,7 +97,10 @@ class MainActivity : AppCompatActivity() {
         refreshList()
     }
 
-    private fun refreshAnniversaryCard() {
+    private fun voiceHelper = VoiceGreetingHelper(this)
+        voiceHelper.speakStartupGreeting()
+
+        refreshAnniversaryCard() {
         val stats = PhotoRepository.getAnniversaryStats(this)
         val ord = PhotoRepository.formatOrdinal(stats.nextAnniversaryNumber)
         binding.tvGreeting.text = "${PhotoRepository.getTimeGreeting("Kayalvizhi")} • Front Seat Reserved ❤️"
@@ -115,6 +128,11 @@ class MainActivity : AppCompatActivity() {
         startService(Intent(this, LoveDriveMediaService::class.java).apply {
             action = LoveDriveMediaService.ACTION_RELOAD
         })
+    }
+
+    override fun onDestroy() {
+        voiceHelper.shutdown()
+        super.onDestroy()
     }
 
     private class PhotoAdapter(
