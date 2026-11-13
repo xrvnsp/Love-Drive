@@ -83,11 +83,12 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
         photos = PhotoRepository.getPhotos(this)
+        val stats = PhotoRepository.getAnniversaryStats(this)
         val items = photos.map { photo ->
             val desc = MediaDescriptionCompat.Builder()
                 .setMediaId(photo.id)
-                .setTitle(photo.title)
-                .setSubtitle(PhotoRepository.getSubtitle(this))
+                .setTitle("Photo ${photo.index} of ${photo.total}")
+                .setSubtitle("${stats.daysTogether} Days Together")
                 .setIconBitmap(PhotoRepository.loadCarBitmap(photo.file, 256))
                 .build()
             MediaBrowserCompat.MediaItem(desc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE)
@@ -180,13 +181,35 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
         nm.notify(NOTIFICATION_ID, buildNotification())
     }
 
+    private fun buildDisplayStrings(photoIndex: Int, total: Int): Pair<String, String> {
+        val stats = PhotoRepository.getAnniversaryStats(this)
+        val customPrefix = PhotoRepository.getSubtitle(this)
+        val title = if (total > 0) {
+            "${stats.daysTogether} Days Together • $photoIndex/$total"
+        } else {
+            "${stats.daysTogether} Days Together"
+        }
+
+        val ord = PhotoRepository.formatOrdinal(stats.nextAnniversaryNumber)
+        val annivText = if (stats.isAnniversaryToday) {
+            "Happy $ord Anniversary!"
+        } else {
+            "${stats.daysToNextAnniversary}d to $ord Anniv (Jan 21)"
+        }
+        val subtitle = if (customPrefix.isNotEmpty()) "$customPrefix • $annivText" else annivText
+        return title to subtitle
+    }
+
     private fun updateCurrentMetadata() {
+        val hideSeekbar = PhotoRepository.getHideSeekbar(this)
+
         if (photos.isEmpty()) {
             val placeholder = BitmapFactory.decodeResource(resources, R.drawable.ic_love_drive)
+            val (title, subtitle) = buildDisplayStrings(0, 0)
             val emptyMeta = MediaMetadataCompat.Builder()
                 .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, "empty")
-                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, "Add photos in Love Drive app")
-                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, PhotoRepository.getSubtitle(this))
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, subtitle)
                 .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, placeholder)
                 .build()
             mediaSession.setMetadata(emptyMeta)
@@ -196,25 +219,28 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
         val photo = photos[currentIndex]
         val art: Bitmap? = PhotoRepository.loadCarBitmap(photo.file, 800)
         val intervalMs = PhotoRepository.getIntervalSeconds(this) * 1000L
+        val (title, subtitle) = buildDisplayStrings(photo.index, photo.total)
 
-        val meta = MediaMetadataCompat.Builder()
+        val metaBuilder = MediaMetadataCompat.Builder()
             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, photo.id)
-            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, photo.title)
-            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, PhotoRepository.getSubtitle(this))
+            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+            .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, subtitle)
             .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, "Love Drive")
-            .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, intervalMs)
-            .apply {
-                if (art != null) {
-                    putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, art)
-                    putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, art)
-                }
-            }
-            .build()
 
-        mediaSession.setMetadata(meta)
+        if (!hideSeekbar) {
+            metaBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, intervalMs)
+        }
+
+        if (art != null) {
+            metaBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, art)
+            metaBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, art)
+        }
+
+        mediaSession.setMetadata(metaBuilder.build())
     }
 
     private fun updatePlaybackState(state: Int) {
+        val hideSeekbar = PhotoRepository.getHideSeekbar(this)
         val actions = PlaybackStateCompat.ACTION_PLAY or
             PlaybackStateCompat.ACTION_PAUSE or
             PlaybackStateCompat.ACTION_PLAY_PAUSE or
@@ -222,9 +248,12 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
             PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or
             PlaybackStateCompat.ACTION_STOP
 
+        val pos = if (hideSeekbar) PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN else 0L
+        val speed = if (state == PlaybackStateCompat.STATE_PLAYING && !hideSeekbar) 1.0f else 0f
+
         val pbState = PlaybackStateCompat.Builder()
             .setActions(actions)
-            .setState(state, 0L, if (state == PlaybackStateCompat.STATE_PLAYING) 1.0f else 0f)
+            .setState(state, pos, speed)
             .build()
 
         mediaSession.setPlaybackState(pbState)
@@ -251,11 +280,15 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
             PlaybackStateCompat.ACTION_SKIP_TO_NEXT
         )
 
-        val currentTitle = if (photos.isNotEmpty()) photos[currentIndex].title else "Love Drive"
-        val subtitle = PhotoRepository.getSubtitle(this)
+        val (title, subtitle) = if (photos.isNotEmpty()) {
+            val p = photos[currentIndex]
+            buildDisplayStrings(p.index, p.total)
+        } else {
+            buildDisplayStrings(0, 0)
+        }
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(currentTitle)
+            .setContentTitle(title)
             .setContentText(subtitle)
             .setSmallIcon(R.drawable.ic_love_drive)
             .setContentIntent(launchIntent)
