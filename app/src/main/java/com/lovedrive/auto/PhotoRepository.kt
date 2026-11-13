@@ -3,12 +3,19 @@ package com.lovedrive.auto
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.RectF
+import android.graphics.Typeface
 import android.media.ExifInterface
 import android.net.Uri
 import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
@@ -55,6 +62,16 @@ object PhotoRepository {
                 index = index + 1,
                 total = files.size
             )
+        }
+    }
+
+    fun getTimeGreeting(wifeName: String = "Kayalvizhi"): String {
+        val hour = LocalTime.now().hour
+        return when (hour) {
+            in 5..11 -> "Good Morning, $wifeName ☀️"
+            in 12..16 -> "Good Afternoon, $wifeName 🌤️"
+            in 17..20 -> "Good Evening, $wifeName ✨"
+            else -> "Sweet Night Drive, $wifeName 🌙"
         }
     }
 
@@ -120,7 +137,11 @@ object PhotoRepository {
         }
     }
 
-    fun loadCarBitmap(file: File, maxDim: Int = 800): Bitmap? {
+    fun loadCarBitmap(
+        file: File,
+        maxDim: Int = 800,
+        overlayBadge: String? = null
+    ): Bitmap? {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(file.absolutePath, bounds)
         var sampleSize = 1
@@ -129,7 +150,59 @@ object PhotoRepository {
         }
         val opts = BitmapFactory.Options().apply { inSampleSize = sampleSize }
         val raw = BitmapFactory.decodeFile(file.absolutePath, opts) ?: return null
-        return centerSquareCrop(raw, maxDim)
+        return blurFitSquare(raw, maxDim, overlayBadge)
+    }
+
+    private fun blurFitSquare(src: Bitmap, targetSize: Int, overlayBadge: String?): Bitmap {
+        val out = Bitmap.createBitmap(targetSize, targetSize, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(out)
+
+        // Draw darkened, soft-blurred background by downscaling and upscaling
+        val tiny = Bitmap.createScaledBitmap(src, 24, 24, true)
+        val bg = Bitmap.createScaledBitmap(tiny, targetSize, targetSize, true)
+        tiny.recycle()
+        canvas.drawBitmap(bg, 0f, 0f, null)
+        bg.recycle()
+
+        val dimPaint = Paint().apply { color = Color.argb(95, 10, 8, 14) }
+        canvas.drawRect(0f, 0f, targetSize.toFloat(), targetSize.toFloat(), dimPaint)
+
+        // Draw full uncropped photo centered
+        val scale = minOf(targetSize.toFloat() / src.width, targetSize.toFloat() / src.height)
+        val drawW = src.width * scale
+        val drawH = src.height * scale
+        val left = (targetSize - drawW) / 2f
+        val top = (targetSize - drawH) / 2f
+        val dstRect = RectF(left, top, left + drawW, top + drawH)
+        canvas.drawBitmap(src, Rect(0, 0, src.width, src.height), dstRect, Paint(Paint.FILTER_BITMAP_FLAG))
+
+        if (!overlayBadge.isNullOrBlank()) {
+            val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.WHITE
+                textSize = targetSize * 0.036f
+                typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                textAlign = Paint.Align.CENTER
+            }
+            val pillH = targetSize * 0.085f
+            val pillMargin = targetSize * 0.035f
+            val pillRect = RectF(
+                pillMargin,
+                targetSize - pillH - pillMargin,
+                targetSize - pillMargin,
+                targetSize - pillMargin
+            )
+            val pillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.argb(175, 24, 12, 22)
+            }
+            canvas.drawRoundRect(pillRect, pillH / 2f, pillH / 2f, pillPaint)
+
+            val fm = textPaint.fontMetrics
+            val textY = pillRect.centerY() - (fm.ascent + fm.descent) / 2f
+            canvas.drawText(overlayBadge, pillRect.centerX(), textY, textPaint)
+        }
+
+        src.recycle()
+        return out
     }
 
     private fun decodeAndResizeFromUri(context: Context, uri: Uri, maxDim: Int): Bitmap? {
@@ -187,20 +260,10 @@ object PhotoRepository {
         return Bitmap.createScaledBitmap(bitmap, (w * ratio).toInt(), (h * ratio).toInt(), true)
     }
 
-    private fun centerSquareCrop(bitmap: Bitmap, targetSize: Int): Bitmap {
-        val size = minOf(bitmap.width, bitmap.height)
-        val x = (bitmap.width - size) / 2
-        val y = (bitmap.height - size) / 2
-        val cropped = Bitmap.createBitmap(bitmap, x, y, size, size)
-        val scaled = Bitmap.createScaledBitmap(cropped, targetSize, targetSize, true)
-        if (cropped !== bitmap && cropped !== scaled) cropped.recycle()
-        if (scaled !== bitmap) bitmap.recycle()
-        return scaled
-    }
-
     fun getSubtitle(context: Context): String =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .getString(KEY_SUBTITLE, "Saravana ❤️ Kayalvizhi") ?: "Saravana ❤️ Kayalvizhi"
+            .getString(KEY_SUBTITLE, "Front Seat Reserved for Kayalvizhi ❤️")
+            ?: "Front Seat Reserved for Kayalvizhi ❤️"
 
     fun setSubtitle(context: Context, subtitle: String) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)

@@ -74,6 +74,10 @@ class MainActivity : AppCompatActivity() {
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
 
+        binding.btnPreviewHeadUnit.setOnClickListener {
+            startActivity(Intent(this, HeadUnitPreviewActivity::class.java))
+        }
+
         binding.btnTogglePlay.setOnClickListener {
             startService(Intent(this, LoveDriveMediaService::class.java).apply {
                 action = LoveDriveMediaService.ACTION_TOGGLE
@@ -86,6 +90,7 @@ class MainActivity : AppCompatActivity() {
     private fun refreshAnniversaryCard() {
         val stats = PhotoRepository.getAnniversaryStats(this)
         val ord = PhotoRepository.formatOrdinal(stats.nextAnniversaryNumber)
+        binding.tvGreeting.text = "${PhotoRepository.getTimeGreeting("Kayalvizhi")} • Front Seat Reserved ❤️"
         binding.tvDaysTogether.text = "${stats.daysTogether} Days Together (Since Jan 21, 2024)"
         binding.tvNextAnniversary.text = if (stats.isAnniversaryToday) {
             "Happy $ord Anniversary Today!"

@@ -32,6 +32,10 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".HeadUnitPreviewActivity"
+            android:exported="false" />
+
         <service
             android:name=".LoveDriveMediaService"
             android:exported="true"

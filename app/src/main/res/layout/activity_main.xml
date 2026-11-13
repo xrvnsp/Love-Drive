@@ -28,7 +28,7 @@
             android:background="#2A1624"
             android:paddingHorizontal="10dp"
             android:paddingVertical="4dp"
-            android:text="v3.0"
+            android:text="v4.1"
             android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="#FF6B9D" />
@@ -52,6 +52,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:id="@+id/tvGreeting"
                 android:text="Saravana ❤️ Kayalvizhi"
                 android:textSize="15sp"
                 android:textStyle="bold"
@@ -158,8 +159,19 @@
             app:cornerRadius="12dp" />
     </LinearLayout>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnPreviewHeadUnit"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="🚗 Preview Head Unit (Split &amp; Full Screen)"
+        android:textColor="#FF80AB"
+        app:strokeColor="#E91E63"
+        app:cornerRadius="12dp" />
+
     <TextView
-        android:id="@+id/tvCount"
+        android:id="@+id/tvCount" 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"

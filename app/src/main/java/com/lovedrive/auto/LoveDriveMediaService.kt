@@ -183,20 +183,21 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
 
     private fun buildDisplayStrings(photoIndex: Int, total: Int): Pair<String, String> {
         val stats = PhotoRepository.getAnniversaryStats(this)
-        val customPrefix = PhotoRepository.getSubtitle(this)
+        val greeting = PhotoRepository.getTimeGreeting("Kayalvizhi")
+        val reservedNote = PhotoRepository.getSubtitle(this)
         val title = if (total > 0) {
-            "${stats.daysTogether} Days Together • $photoIndex/$total"
+            "$greeting • $photoIndex/$total"
         } else {
-            "${stats.daysTogether} Days Together"
+            greeting
         }
 
         val ord = PhotoRepository.formatOrdinal(stats.nextAnniversaryNumber)
         val annivText = if (stats.isAnniversaryToday) {
-            "Happy $ord Anniversary!"
+            "${stats.daysTogether}d • Happy $ord Anniv!"
         } else {
-            "${stats.daysToNextAnniversary}d to $ord Anniv (Jan 21)"
+            "${stats.daysTogether}d • ${stats.daysToNextAnniversary}d to $ord Anniv"
         }
-        val subtitle = if (customPrefix.isNotEmpty()) "$customPrefix • $annivText" else annivText
+        val subtitle = if (reservedNote.isNotEmpty()) "$reservedNote • $annivText" else annivText
         return title to subtitle
     }
 
@@ -217,7 +218,7 @@ class LoveDriveMediaService : MediaBrowserServiceCompat() {
         }
 
         val photo = photos[currentIndex]
-        val art: Bitmap? = PhotoRepository.loadCarBitmap(photo.file, 800)
+        val art: Bitmap? = PhotoRepository.loadCarBitmap(photo.file, 800, "Reserved for Kayalvizhi ❤️ • ${PhotoRepository.getAnniversaryStats(this).daysTogether} Days")
         val intervalMs = PhotoRepository.getIntervalSeconds(this) * 1000L
         val (title, subtitle) = buildDisplayStrings(photo.index, photo.total)
 
