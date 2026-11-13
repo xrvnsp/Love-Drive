@@ -40,7 +40,20 @@ class HeadUnitPreviewActivity : AppCompatActivity() {
 
         binding.btnBack.setOnClickListener { finish() }
 
-        binding.btnModeSplit.setOnClickListener { setSplitMode(true) }
+        binding.btnModeSplit.setOnClickListener { binding.headUnitFrame.post {
+            val parent = binding.headUnitFrame.parent as View
+            val availW = parent.width
+            val availH = parent.height
+            if (availW > 0 && availH > 0) {
+                val targetW = minOf(availW, (availH * 16f / 9f).toInt())
+                val targetH = (targetW * 9f / 16f).toInt()
+                binding.headUnitFrame.layoutParams = binding.headUnitFrame.layoutParams.apply {
+                    width = targetW
+                    height = targetH
+                }
+            }
+        }
+        setSplitMode(true) }
         binding.btnModeFull.setOnClickListener { setSplitMode(false) }
 
         binding.btnCarPrev.setOnClickListener {
@@ -69,6 +82,19 @@ class HeadUnitPreviewActivity : AppCompatActivity() {
         val hideSeekbar = PhotoRepository.getHideSeekbar(this)
         binding.pbCarSeekbar.visibility = if (hideSeekbar) View.GONE else View.VISIBLE
 
+        binding.headUnitFrame.post {
+            val parent = binding.headUnitFrame.parent as View
+            val availW = parent.width
+            val availH = parent.height
+            if (availW > 0 && availH > 0) {
+                val targetW = minOf(availW, (availH * 16f / 9f).toInt())
+                val targetH = (targetW * 9f / 16f).toInt()
+                binding.headUnitFrame.layoutParams = binding.headUnitFrame.layoutParams.apply {
+                    width = targetW
+                    height = targetH
+                }
+            }
+        }
         setSplitMode(true)
         renderPhoto()
         if (photos.isNotEmpty()) {

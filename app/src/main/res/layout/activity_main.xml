@@ -28,7 +28,7 @@
             android:background="#2A1624"
             android:paddingHorizontal="10dp"
             android:paddingVertical="4dp"
-            android:text="v4.1"
+            android:text="v4.2"
             android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="#FF6B9D" />
@@ -165,7 +165,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:text="🚗 Preview Head Unit (Split &amp; Full Screen)"
+        android:text="🚗 Preview Head Unit (1280×720 Landscape)"
         android:textColor="#FF80AB"
         app:strokeColor="#E91E63"
         app:cornerRadius="12dp" />

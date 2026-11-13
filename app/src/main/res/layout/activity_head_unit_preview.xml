@@ -4,10 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="14dp"
+    android:padding="10dp"
     android:background="#090B10">
 
-    <!-- Top Navigation Bar -->
+    <!-- Compact Landscape Top Controls -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,269 +18,269 @@
             android:id="@+id/btnBack"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
             android:text="← Back"
-            app:cornerRadius="10dp" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="Head Unit Preview"
-            android:textColor="#FFFFFF"
-            android:textSize="17sp"
-            android:textStyle="bold" />
+            android:textSize="12sp"
+            app:cornerRadius="8dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:background="#1E293B"
             android:paddingHorizontal="8dp"
             android:paddingVertical="4dp"
-            android:text="AA Coolwalk"
+            android:text="1280×720 (16:9)"
             android:textColor="#93C5FD"
             android:textSize="11sp"
             android:textStyle="bold" />
-    </LinearLayout>
 
-    <!-- Mode Switcher: Split-Screen vs Full-Screen -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal">
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnModeSplit"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
             android:layout_marginEnd="6dp"
             android:text="Split (Maps + Love Drive)"
-            android:textSize="12sp"
-            app:cornerRadius="10dp" />
+            android:textSize="11sp"
+            app:cornerRadius="8dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnModeFull"
             style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Full Screen (Love Drive)"
-            android:textSize="12sp"
-            app:cornerRadius="10dp" />
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="Full Screen"
+            android:textSize="11sp"
+            app:cornerRadius="8dp" />
     </LinearLayout>
 
-    <!-- Simulated Car Infotainment Display -->
-    <com.google.android.material.card.MaterialCardView
+    <!-- 16:9 (1280x720) Centered Head Unit Container -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="12dp"
-        app:cardBackgroundColor="#121620"
-        app:cardCornerRadius="20dp"
-        app:strokeColor="#334155"
-        app:strokeWidth="2dp">
+        android:layout_marginTop="8dp">
 
-        <LinearLayout
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/headUnitFrame"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="10dp">
+            android:layout_gravity="center"
+            app:cardBackgroundColor="#121620"
+            app:cardCornerRadius="16dp"
+            app:strokeColor="#334155"
+            app:strokeWidth="2dp">
 
-            <!-- Android Auto Content Area -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:orientation="horizontal">
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="8dp">
 
-                <!-- Left Panel: Simulated Google Maps (hidden in Full Screen) -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/panelMaps"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1.35"
-                    android:layout_marginEnd="8dp"
-                    app:cardBackgroundColor="#162231"
-                    app:cardCornerRadius="14dp"
-                    app:strokeWidth="0dp">
+                <!-- Android Auto Content Area -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <!-- Left Panel: Simulated Google Maps (62% width in Split) -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/panelMaps"
+                        android:layout_width="0dp"
                         android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:padding="12dp">
+                        android:layout_weight="1.5"
+                        android:layout_marginEnd="8dp"
+                        app:cardBackgroundColor="#162231"
+                        app:cardCornerRadius="12dp"
+                        app:strokeWidth="0dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="#0F5132"
+                            android:layout_height="match_parent"
                             android:orientation="vertical"
                             android:padding="10dp">
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="↱ 400 m"
-                                android:textColor="#FFFFFF"
-                                android:textSize="18sp"
+                                android:background="#0F5132"
+                                android:orientation="vertical"
+                                android:padding="8dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="↱ 400 m"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="East Coast Rd • Google Maps"
+                                    android:textColor="#D1FAE5"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="🗺️ Live Navigation Active (1280×720)"
+                                android:textColor="#60A5FA"
+                                android:textSize="13sp"
                                 android:textStyle="bold" />
 
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1" />
+
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="East Coast Rd • Google Maps"
-                                android:textColor="#D1FAE5"
-                                android:textSize="12sp" />
+                                android:background="#1E293B"
+                                android:padding="6dp"
+                                android:text="18 min • 11.4 km • ETA"
+                                android:textColor="#E2E8F0"
+                                android:textSize="11sp" />
                         </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="1" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:text="🗺️ Live Navigation Active"
-                            android:textColor="#60A5FA"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="1" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="#1E293B"
-                            android:padding="8dp"
-                            android:text="18 min • 11.4 km • ETA"
-                            android:textColor="#E2E8F0"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Right / Full Panel: Love Drive Media Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/panelLoveDrive"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    app:cardBackgroundColor="#1B1320"
-                    app:cardCornerRadius="14dp"
-                    app:strokeColor="#E91E63"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <!-- Right / Full Panel: Love Drive Media Card -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/panelLoveDrive"
+                        android:layout_width="0dp"
                         android:layout_height="match_parent"
-                        android:gravity="center_horizontal"
-                        android:orientation="vertical"
-                        android:padding="10dp">
-
-                        <ImageView
-                            android:id="@+id/ivCarPhoto"
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"
-                            android:scaleType="fitCenter"
-                            android:contentDescription="Head unit photo preview" />
-
-                        <TextView
-                            android:id="@+id/tvCarTitle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:ellipsize="end"
-                            android:gravity="center"
-                            android:maxLines="1"
-                            android:text="Good Afternoon, Kayalvizhi 🌤️"
-                            android:textColor="#FFFFFF"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tvCarSubtitle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:ellipsize="end"
-                            android:gravity="center"
-                            android:maxLines="2"
-                            android:text="Front Seat Reserved for Kayalvizhi ❤️"
-                            android:textColor="#F8BBD0"
-                            android:textSize="11sp" />
-
-                        <ProgressBar
-                            android:id="@+id/pbCarSeekbar"
-                            style="?android:attr/progressBarStyleHorizontal"
-                            android:layout_width="match_parent"
-                            android:layout_height="4dp"
-                            android:layout_marginTop="6dp"
-                            android:max="100"
-                            android:progress="45" />
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="#1B1320"
+                        app:cardCornerRadius="12dp"
+                        app:strokeColor="#E91E63"
+                        app:strokeWidth="1dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:gravity="center"
-                            android:orientation="horizontal">
+                            android:layout_height="match_parent"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical"
+                            android:padding="8dp">
 
-                            <ImageButton
-                                android:id="@+id/btnCarPrev"
-                                android:layout_width="44dp"
-                                android:layout_height="44dp"
-                                android:background="?attr/selectableItemBackgroundBorderless"
-                                android:contentDescription="Previous photo"
-                                android:src="@android:drawable/ic_media_previous"
-                                app:tint="#FFFFFF" />
+                            <ImageView
+                                android:id="@+id/ivCarPhoto"
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:scaleType="fitCenter"
+                                android:contentDescription="Head unit photo preview" />
 
-                            <ImageButton
-                                android:id="@+id/btnCarPlayPause"
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:layout_marginHorizontal="12dp"
-                                android:background="?attr/selectableItemBackgroundBorderless"
-                                android:contentDescription="Play or pause"
-                                android:src="@android:drawable/ic_media_pause"
-                                app:tint="#FF80AB" />
+                            <TextView
+                                android:id="@+id/tvCarTitle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:ellipsize="end"
+                                android:gravity="center"
+                                android:maxLines="1"
+                                android:text="Good Afternoon, Kayalvizhi 🌤️"
+                                android:textColor="#FFFFFF"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
 
-                            <ImageButton
-                                android:id="@+id/btnCarNext"
-                                android:layout_width="44dp"
-                                android:layout_height="44dp"
-                                android:background="?attr/selectableItemBackgroundBorderless"
-                                android:contentDescription="Next photo"
-                                android:src="@android:drawable/ic_media_next"
-                                app:tint="#FFFFFF" />
+                            <TextView
+                                android:id="@+id/tvCarSubtitle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="1dp"
+                                android:ellipsize="end"
+                                android:gravity="center"
+                                android:maxLines="1"
+                                android:text="Front Seat Reserved for Kayalvizhi ❤️"
+                                android:textColor="#F8BBD0"
+                                android:textSize="11sp" />
+
+                            <ProgressBar
+                                android:id="@+id/pbCarSeekbar"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="match_parent"
+                                android:layout_height="4dp"
+                                android:layout_marginTop="4dp"
+                                android:max="100"
+                                android:progress="45" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:gravity="center"
+                                android:orientation="horizontal">
+
+                                <ImageButton
+                                    android:id="@+id/btnCarPrev"
+                                    android:layout_width="38dp"
+                                    android:layout_height="38dp"
+                                    android:background="?attr/selectableItemBackgroundBorderless"
+                                    android:contentDescription="Previous photo"
+                                    android:src="@android:drawable/ic_media_previous"
+                                    app:tint="#FFFFFF" />
+
+                                <ImageButton
+                                    android:id="@+id/btnCarPlayPause"
+                                    android:layout_width="42dp"
+                                    android:layout_height="42dp"
+                                    android:layout_marginHorizontal="10dp"
+                                    android:background="?attr/selectableItemBackgroundBorderless"
+                                    android:contentDescription="Play or pause"
+                                    android:src="@android:drawable/ic_media_pause"
+                                    app:tint="#FF80AB" />
+
+                                <ImageButton
+                                    android:id="@+id/btnCarNext"
+                                    android:layout_width="38dp"
+                                    android:layout_height="38dp"
+                                    android:background="?attr/selectableItemBackgroundBorderless"
+                                    android:contentDescription="Next photo"
+                                    android:src="@android:drawable/ic_media_next"
+                                    app:tint="#FFFFFF" />
+                            </LinearLayout>
                         </LinearLayout>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-            </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
 
-            <!-- Simulated Android Auto Bottom Dock -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="34dp"
-                android:layout_marginTop="8dp"
-                android:background="#0B0E14"
-                android:gravity="center"
-                android:orientation="horizontal">
+                <!-- Simulated Android Auto Bottom Dock -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="28dp"
+                    android:layout_marginTop="6dp"
+                    android:background="#0B0E14"
+                    android:gravity="center"
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🔘  🗺️ Maps   ❤️ Love Drive   📞 Phone   🔔"
-                    android:textColor="#94A3B8"
-                    android:textSize="12sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔘   🗺️ Maps   ❤️ Love Drive   📞 Phone   🔔   1280×720"
+                        android:textColor="#94A3B8"
+                        android:textSize="11sp" />
+                </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+        </com.google.android.material.card.MaterialCardView>
+    </FrameLayout>
 </LinearLayout>
