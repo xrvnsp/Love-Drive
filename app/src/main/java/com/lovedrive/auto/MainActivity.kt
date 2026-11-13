@@ -97,10 +97,7 @@ class MainActivity : AppCompatActivity() {
         refreshList()
     }
 
-    private fun voiceHelper = VoiceGreetingHelper(this)
-        voiceHelper.speakStartupGreeting()
-
-        refreshAnniversaryCard() {
+    private fun refreshAnniversaryCard() {
         val stats = PhotoRepository.getAnniversaryStats(this)
         val ord = PhotoRepository.formatOrdinal(stats.nextAnniversaryNumber)
         binding.tvGreeting.text = "${PhotoRepository.getTimeGreeting("Kayalvizhi")} • Front Seat Reserved ❤️"
