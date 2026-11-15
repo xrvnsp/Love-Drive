@@ -11,8 +11,8 @@ android {
         applicationId = "com.lovedrive.auto"
         minSdk = 26
         targetSdk = 34
-        versionCode = 14
-        versionName = "5.0"
+        versionCode = 15
+        versionName = "6.0"
     }
 
     buildTypes {
@@ -46,4 +46,6 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.9.2")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.media:media:1.7.0")
+    implementation("androidx.car.app:app:1.4.0")
+    implementation("androidx.car.app:app-projected:1.4.0")
 }

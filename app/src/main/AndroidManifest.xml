@@ -5,6 +5,11 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Required for true Fullscreen Surface rendering on Android Auto head unit -->
+    <uses-permission android:name="androidx.car.app.NAVIGATION_TEMPLATES" />
+    <uses-permission android:name="androidx.car.app.MAP_TEMPLATES" />
+    <uses-permission android:name="androidx.car.app.ACCESS_SURFACE" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_love_drive"
@@ -13,11 +18,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LoveDrive">
 
-        <!-- Declares Android Auto Media support so Love Drive runs in non-parking mode
-             and appears in Coolwalk split-screen alongside Google Maps -->
         <meta-data
             android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc" />
+
+        <meta-data
+            android:name="androidx.car.app.minCarApiLevel"
+            android:value="1" />
 
         <meta-data
             android:name="com.google.android.gms.car.notification.SmallIcon"
@@ -37,6 +44,19 @@
             android:exported="false"
             android:screenOrientation="sensorLandscape" />
 
+        <!-- Mode 1: True Fullscreen Surface Canvas on Head Unit (100% edge-to-edge photo + smooth ticker) -->
+        <service
+            android:name=".LoveDriveCarAppService"
+            android:exported="true"
+            android:label="Love Drive Fullscreen">
+            <intent-filter>
+                <action android:name="androidx.car.app.CarAppService" />
+                <category android:name="androidx.car.app.category.NAVIGATION" />
+                <category android:name="androidx.car.app.category.POI" />
+            </intent-filter>
+        </service>
+
+        <!-- Mode 2: Split-Screen Media Card alongside Google Maps -->
         <service
             android:name=".LoveDriveMediaService"
             android:exported="true"
