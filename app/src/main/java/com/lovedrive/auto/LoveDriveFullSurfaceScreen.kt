@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
-import android.graphics.RectF
 import android.graphics.Typeface
 import android.os.Handler
 import android.os.Looper
@@ -50,7 +49,7 @@ class LoveDriveFullSurfaceScreen(carContext: CarContext) :
                 cachedFrame = null
             }
             drawFrameToSurface()
-            handler.postDelayed(this, 50L) // ~20 FPS smooth fullscreen photo + bottom ticker
+            handler.postDelayed(this, 50L)
         }
     }
 
@@ -106,10 +105,6 @@ class LoveDriveFullSurfaceScreen(carContext: CarContext) :
         if (surfaceContainer === container) {
             surfaceContainer = null
         }
-    }
-
-    override fun onClick(x: Float, y: Float) {
-        nextPhoto()
     }
 
     private fun nextPhoto() {
@@ -190,7 +185,7 @@ class LoveDriveFullSurfaceScreen(carContext: CarContext) :
                 }
             }
 
-            // Top translucent header pill with Greeting + Photo count
+            // Top translucent greeting header
             val greeting = PhotoRepository.getTimeGreeting("Kayalvizhi")
             val topTitle = if (photos.isNotEmpty()) {
                 "$greeting  •  ${currentIndex + 1}/${photos.size}"
@@ -214,7 +209,7 @@ class LoveDriveFullSurfaceScreen(carContext: CarContext) :
             val topTextY = (topBarH / 2f) - (fmTop.ascent + fmTop.descent) / 2f
             canvas.drawText(topTitle, w * 0.035f, topTextY, titlePaint)
 
-            // Bottom continuous news-scroll ticker bar
+            // Bottom continuous 20 FPS news-scroll ticker bar
             if (isTickerActive) {
                 val barH = h * 0.105f
                 val barTop = h - barH
@@ -256,13 +251,13 @@ class LoveDriveFullSurfaceScreen(carContext: CarContext) :
         val actionStrip = ActionStrip.Builder()
             .addAction(
                 Action.Builder()
-                    .setTitle("⏮")
+                    .setTitle("Prev")
                     .setOnClickListener { prevPhoto() }
                     .build()
             )
             .addAction(
                 Action.Builder()
-                    .setTitle(if (isPlaying) "⏸" else "▶")
+                    .setTitle(if (isPlaying) "Pause" else "Play")
                     .setOnClickListener {
                         isPlaying = !isPlaying
                         lastAdvanceMs = System.currentTimeMillis()
@@ -272,13 +267,13 @@ class LoveDriveFullSurfaceScreen(carContext: CarContext) :
             )
             .addAction(
                 Action.Builder()
-                    .setTitle("⏭")
+                    .setTitle("Next")
                     .setOnClickListener { nextPhoto() }
                     .build()
             )
             .addAction(
                 Action.Builder()
-                    .setTitle(if (isTickerActive) "💌 ON" else "💌 OFF")
+                    .setTitle(if (isTickerActive) "Letter ON" else "Letter OFF")
                     .setOnClickListener {
                         isTickerActive = !isTickerActive
                         PhotoRepository.setCarTickerEnabled(carContext, isTickerActive)
@@ -288,13 +283,8 @@ class LoveDriveFullSurfaceScreen(carContext: CarContext) :
             )
             .build()
 
-        val mapActionStrip = ActionStrip.Builder()
-            .addAction(Action.PAN)
-            .build()
-
         return NavigationTemplate.Builder()
             .setActionStrip(actionStrip)
-            .setMapActionStrip(mapActionStrip)
             .build()
     }
 }

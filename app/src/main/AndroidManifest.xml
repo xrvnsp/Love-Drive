@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
-    <!-- Required for true Fullscreen Surface rendering on Android Auto head unit -->
+    <!-- True Fullscreen Surface rendering on Android Auto head unit -->
     <uses-permission android:name="androidx.car.app.NAVIGATION_TEMPLATES" />
-    <uses-permission android:name="androidx.car.app.MAP_TEMPLATES" />
     <uses-permission android:name="androidx.car.app.ACCESS_SURFACE" />
 
     <application
@@ -18,6 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LoveDrive">
 
+        <!-- Template-only descriptor so Android Auto ALWAYS launches the Fullscreen Canvas -->
         <meta-data
             android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc" />
@@ -25,10 +21,6 @@
         <meta-data
             android:name="androidx.car.app.minCarApiLevel"
             android:value="1" />
-
-        <meta-data
-            android:name="com.google.android.gms.car.notification.SmallIcon"
-            android:resource="@drawable/ic_love_drive" />
 
         <activity
             android:name=".MainActivity"
@@ -44,28 +36,15 @@
             android:exported="false"
             android:screenOrientation="sensorLandscape" />
 
-        <!-- Mode 1: True Fullscreen Surface Canvas on Head Unit (100% edge-to-edge photo + smooth ticker) -->
+        <!-- Pure Fullscreen Surface Canvas Service (replaces Media player conflict) -->
         <service
             android:name=".LoveDriveCarAppService"
             android:exported="true"
-            android:label="Love Drive Fullscreen">
+            android:label="@string/app_name"
+            android:icon="@drawable/ic_love_drive">
             <intent-filter>
                 <action android:name="androidx.car.app.CarAppService" />
                 <category android:name="androidx.car.app.category.NAVIGATION" />
-                <category android:name="androidx.car.app.category.POI" />
-            </intent-filter>
-        </service>
-
-        <!-- Mode 2: Split-Screen Media Card alongside Google Maps -->
-        <service
-            android:name=".LoveDriveMediaService"
-            android:exported="true"
-            android:foregroundServiceType="mediaPlayback">
-            <intent-filter>
-                <action android:name="android.media.browse.MediaBrowserService" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </service>
 
